@@ -11,35 +11,43 @@ def init_admin(mysql_instance):
     mysql = mysql_instance
 
 
+# =========================
+# ADMIN LOGIN
+# =========================
 @admin.route("/admin", methods=["GET", "POST"])
 def admin_login():
 
     if request.method == "POST":
 
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-        cur = mysql.connection.cursor()
+        try:
+            cur = mysql.connection.cursor()
 
-        cur.execute(
-            "SELECT * FROM admin WHERE username=%s AND password=%s",
-            (username, password)
-        )
+            cur.execute(
+                "SELECT * FROM admin WHERE username=%s AND password=%s",
+                (username, password)
+            )
 
-        admin_user = cur.fetchone()
+            admin_user = cur.fetchone()
+            cur.close()
 
-        cur.close()
+            if admin_user:
+                session["admin"] = username
+                return redirect("/admin/dashboard")
 
-        if admin_user:
+            flash("Invalid Admin Login", "danger")
 
-            session["admin"] = username
-
-            return redirect("/admin/dashboard")
-
-        flash("Invalid Admin Login", "danger")
+        except Exception as e:
+            return f"Admin Login Error: {e}"
 
     return render_template("admin_login.html")
 
+
+# =========================
+# DASHBOARD
+# =========================
 @admin.route("/admin/dashboard")
 def admin_dashboard():
 
@@ -68,8 +76,12 @@ def admin_dashboard():
         total_foods=total_foods,
         total_orders=total_orders,
         total_revenue=total_revenue
-    )  
+    )
 
+
+# =========================
+# MANAGE FOODS
+# =========================
 @admin.route("/admin/foods", methods=["GET", "POST"])
 def manage_foods():
 
@@ -78,46 +90,48 @@ def manage_foods():
 
     cur = mysql.connection.cursor()
 
-    if request.method == "POST":
+    try:
+        if request.method == "POST":
 
-        category_id = request.form["category_id"]
-        food_name = request.form["food_name"]
-        description = request.form["description"]
-        price = request.form["price"]
-        
-        image = request.files["image"]
+            category_id = request.form.get("category_id")
+            food_name = request.form.get("food_name")
+            description = request.form.get("description")
+            price = request.form.get("price")
 
-        filename = secure_filename(image.filename)
+            image = request.files.get("image")
 
-        image.save(os.path.join("static/food_images", filename))
-        
-        print("Category ID =",category_id)
+            filename = None
+
+            if image and image.filename != "":
+                filename = secure_filename(image.filename)
+                image.save(os.path.join("static/food_images", filename))
+
+            cur.execute("""
+                INSERT INTO foods
+                (category_id, food_name, description, price, image)
+                VALUES (%s,%s,%s,%s,%s)
+            """, (category_id, food_name, description, price, filename))
+
+            mysql.connection.commit()
+            flash("Food Added Successfully", "success")
 
         cur.execute("""
-            INSERT INTO foods
-            (category_id, food_name, description, price, image)
-            VALUES (%s,%s,%s,%s,%s)
-        """, (category_id, food_name, description, price, filename))
+            SELECT id, food_name, price, image
+            FROM foods
+        """)
 
-        mysql.connection.commit()
+        foods = cur.fetchall()
+        cur.close()
 
-        flash("Food Added Successfully", "success")
+        return render_template("manage_foods.html", foods=foods)
 
-    cur.execute("""
-        SELECT
-            id,
-            food_name,
-            price,
-            image
-        FROM foods
-    """)
+    except Exception as e:
+        return f"Manage Foods Error: {e}"
 
-    foods = cur.fetchall()
 
-    cur.close()
-
-    return render_template("manage_foods.html", foods=foods)
-
+# =========================
+# DELETE FOOD
+# =========================
 @admin.route("/admin/delete_food/<int:food_id>")
 def delete_food(food_id):
 
@@ -132,13 +146,15 @@ def delete_food(food_id):
     )
 
     mysql.connection.commit()
-
     cur.close()
 
     flash("Food Deleted Successfully", "success")
-
     return redirect("/admin/foods")
 
+
+# =========================
+# EDIT FOOD
+# =========================
 @admin.route("/admin/edit_food/<int:food_id>", methods=["GET", "POST"])
 def edit_food(food_id):
 
@@ -149,9 +165,9 @@ def edit_food(food_id):
 
     if request.method == "POST":
 
-        food_name = request.form["food_name"]
-        description = request.form["description"]
-        price = request.form["price"]
+        food_name = request.form.get("food_name")
+        description = request.form.get("description")
+        price = request.form.get("price")
 
         cur.execute("""
             UPDATE foods
@@ -162,9 +178,9 @@ def edit_food(food_id):
         """, (food_name, description, price, food_id))
 
         mysql.connection.commit()
+        cur.close()
 
         flash("Food Updated Successfully", "success")
-
         return redirect("/admin/foods")
 
     cur.execute(
@@ -173,11 +189,14 @@ def edit_food(food_id):
     )
 
     food = cur.fetchone()
-
     cur.close()
 
-    return render_template("edit_food.html", food=food)      
+    return render_template("edit_food.html", food=food)
 
+
+# =========================
+# ORDERS
+# =========================
 @admin.route("/admin/orders")
 def admin_orders():
 
@@ -194,17 +213,19 @@ def admin_orders():
             orders.payment_method,
             orders.ordered_at
         FROM orders
-        JOIN users
-        ON orders.user_id = users.id
+        JOIN users ON orders.user_id = users.id
         ORDER BY orders.ordered_at DESC
     """)
 
     orders = cur.fetchall()
-
     cur.close()
 
     return render_template("admin_orders.html", orders=orders)
 
+
+# =========================
+# USERS
+# =========================
 @admin.route("/admin/users")
 def admin_users():
 
@@ -214,24 +235,20 @@ def admin_users():
     cur = mysql.connection.cursor()
 
     cur.execute("""
-        SELECT
-            id,
-            fullname,
-            email,
-            mobile
+        SELECT id, fullname, email, mobile
         FROM users
         ORDER BY id DESC
     """)
 
     users = cur.fetchall()
-
     cur.close()
 
-    return render_template(
-        "admin_users.html",
-        users=users
-    )
+    return render_template("admin_users.html", users=users)
 
+
+# =========================
+# DELETE USER
+# =========================
 @admin.route("/admin/delete_user/<int:user_id>")
 def delete_user(user_id):
 
@@ -246,13 +263,15 @@ def delete_user(user_id):
     )
 
     mysql.connection.commit()
-
     cur.close()
 
     flash("User Deleted Successfully", "success")
-
     return redirect("/admin/users")
 
+
+# =========================
+# SALES REPORT
+# =========================
 @admin.route("/admin/sales_report")
 def sales_report():
 
@@ -272,11 +291,12 @@ def sales_report():
     """)
 
     reports = cur.fetchall()
-
     cur.close()
 
-    return render_template(
-        "sales_report.html",
-        reports=reports
-    )    
+    return render_template("sales_report.html", reports=reports)
 
+@admin.route("/admin/logout")
+def admin_logout():
+    session.pop("admin", None)
+    flash("Admin Logged Out Successfully", "success")
+    return redirect("/admin")    

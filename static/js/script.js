@@ -1,35 +1,37 @@
-function addCart(food){
-
+function addCart(food) {
     alert(food + " added to cart.");
-
 }
 
-function searchFood(){
+function searchFood() {
 
-    let input=document.getElementById("searchFood").value.toUpperCase();
+    let input = document.getElementById("searchFood").value.toUpperCase();
+    let cards = document.getElementsByClassName("food-card");
 
-    let cards=document.getElementsByClassName("food-card");
+    for (let i = 0; i < cards.length; i++) {
 
-    for(let i=0;i<cards.length;i++){
+        let title = cards[i].getElementsByTagName("h4")[0];
 
-        let title=cards[i].getElementsByTagName("h4")[0];
-
-        if(title.innerHTML.toUpperCase().indexOf(input)>-1){
-
-            cards[i].parentElement.style.display="block";
-
-        }else{
-
-            cards[i].parentElement.style.display="none";
-
+        if (title.innerHTML.toUpperCase().indexOf(input) > -1) {
+            cards[i].parentElement.style.display = "";
+        } else {
+            cards[i].parentElement.style.display = "none";
         }
-
     }
-
 }
 
-function filterFood(){
+function filterFood() {
 
-    alert("Category Filter will connect with MySQL in next step.");
+    let filter = document.getElementById("categoryFilter").value.toUpperCase();
+    let cards = document.getElementsByClassName("food-card");
 
+    for (let i = 0; i < cards.length; i++) {
+
+        let text = cards[i].innerText.toUpperCase();
+
+        if (filter === "ALL" || text.indexOf(filter) > -1) {
+            cards[i].parentElement.style.display = "";
+        } else {
+            cards[i].parentElement.style.display = "none";
+        }
+    }
 }

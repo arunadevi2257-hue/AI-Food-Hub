@@ -1,120 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-<title>Cart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>My Cart</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 
 </head>
 
-<body>
+<body class="bg-light">
 
 <div class="container py-5">
 
-<h2 class="text-center mb-5">
+    <h2 class="text-center mb-5">
+        🛒 My Cart
+    </h2>
 
-🛒 My Cart
+    {% if cart_items %}
 
-</h2>
+    <div class="table-responsive">
 
-<table class="table table-bordered text-center">
+        <table class="table table-bordered table-hover text-center align-middle">
 
-<thead>
+            <thead class="table-dark">
 
-<tr>
+                <tr>
+                    <th>Image</th>
+                    <th>Food</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
 
-<th>Image</th>
+            </thead>
 
-<th>Food</th>
+            <tbody>
 
-<th>Price</th>
+            {% for item in cart_items %}
 
-<th>Quantity</th>
+                <tr>
 
-<th>Total</th>
+                    <td>
 
-<th>Action</th>
+                        <img src="{{ url_for('static', filename='food_images/' + item[3]) }}"
+                             width="80"
+                             height="80"
+                             class="rounded">
 
-</tr>
+                    </td>
 
-</thead>
+                    <td>{{ item[1] }}</td>
 
-<tbody>
+                    <td>₹ {{ item[2] }}</td>
 
-{% for item in cart_items %}
+                    <td>
 
-<tr>
+                        <a href="/decrease/{{ item[0] }}"
+                           class="btn btn-danger btn-sm">−</a>
 
-<td>
+                        <span class="mx-2 fw-bold">
+                            {{ item[4] }}
+                        </span>
 
-<img src="{{ url_for('static', filename='food_images/' + item[3]) }}"
-width="80">
+                        <a href="/increase/{{ item[0] }}"
+                           class="btn btn-success btn-sm">+</a>
 
-</td>
+                    </td>
 
-<td>{{ item[1] }}</td>
+                    <td>
+                        ₹ {{ item[2] * item[4] }}
+                    </td>
 
-<td>₹ {{ item[2] }}</td>
+                    <td>
 
-<td>
+                        <a href="/remove/{{ item[0] }}"
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Remove this item?')">
 
-<a href="/decrease/{{ item[0] }}" class="btn btn-danger btn-sm">-</a>
+                            Remove
 
-<span class="mx-2">{{ item[4] }}</span>
+                        </a>
 
-<a href="/increase/{{ item[0] }}" class="btn btn-success btn-sm">+</a>
+                    </td>
 
-</td>
+                </tr>
 
-<td>₹ {{ item[2] * item[4] }}</td>
+            {% endfor %}
 
-<td>
+            </tbody>
 
-<a href="/remove/{{ item[0] }}"
-class="btn btn-outline-danger btn-sm">
+        </table>
 
-Remove
+    </div>
 
-</a>
+    <h3 class="text-end">
 
-</td>
+        Grand Total :
 
-</tr>
+        <span class="text-success">
+            ₹ {{ total }}
+        </span>
 
-{% endfor %}
+    </h3>
 
-</tbody>
+    <div class="text-end">
 
-</table>
+        <a href="/checkout"
+           class="btn btn-success">
 
-<h3 class="text-end">
+            Proceed To Checkout
 
-Grand Total :
+        </a>
 
-<span class="text-success">
+    </div>
 
-₹ {{ total }}
+    {% else %}
 
-</span>
+    <div class="alert alert-info text-center">
 
-</h3>
+        🛒 Your cart is empty.
 
-<div class="text-end">
+        <br><br>
 
-<a href="/checkout"
-class="btn btn-success">
+        <a href="/menu" class="btn btn-primary">
+            Browse Menu
+        </a>
 
-Proceed To Checkout
+    </div>
 
-</a>
+    {% endif %}
 
 </div>
 
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
