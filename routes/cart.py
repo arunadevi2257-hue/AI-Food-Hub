@@ -145,7 +145,9 @@ def remove(cart_id):
     mysql.connection.commit()
     cur.close()
 
-    return redirect("/cart")from flask import Blueprint, render_template, redirect, session, flash
+    return redirect("/cart")
+    
+from flask import Blueprint, render_template, redirect, session, flash
 
 cart = Blueprint("cart", __name__)
 
