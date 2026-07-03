@@ -11,11 +11,11 @@ from routes.admin import admin, init_admin
 app = Flask(__name__)
 
 
-app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST")
-app.config["MYSQL_USER"] = os.getenv("MYSQL_USER")
-app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD")
-app.config["MYSQL_DB"] = os.getenv("MYSQL_DB")
-app.config["MYSQL_PORT"] = int(os.getenv("MYSQL_PORT", 3306))
+app.config["MYSQL_HOST"] = os.getenv("mysql-26a6c399-ai-food-hub.c.aivencloud.com")
+app.config["MYSQL_USER"] = os.getenv("avnadmin")
+app.config["MYSQL_PASSWORD"] = os.getenv("AVNS_7X6uVu6p2o3vqSlM4s6")
+app.config["MYSQL_DB"] = os.getenv("defaultdb")
+app.config["MYSQL_PORT"] = int(os.getenv("21835"))
 
 app.config["UPLOAD_FOLDER"] = "static/food_images"
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "default_secret")
