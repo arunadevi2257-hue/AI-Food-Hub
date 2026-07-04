@@ -94,4 +94,20 @@ def recommendations():
         return render_template("recommendations.html", foods=foods)
 
     except Exception as e:
-        return f"Recommendation Error: {e}"
+            return f"Recommendation Error: {e}
+
+@menu.route("/menu")
+def menu_page():
+    try:
+        cur = mysql.connection.cursor()
+
+        cur.execute("SELECT DATABASE()")
+        db = cur.fetchone()
+
+        cur.execute("SHOW TABLES")
+        tables = cur.fetchall()
+
+        return f"Database: {db}<br>Tables: {tables}"
+
+    except Exception as e:
+        return f"Menu Error: {e}"
