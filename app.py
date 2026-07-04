@@ -65,4 +65,10 @@ def dbinfo():
         "port": app.config["MYSQL_PORT"]
     }    
 
-    
+
+@app.route("/check_foods")
+def check_foods():
+    cur = mysql.connection.cursor()
+    cur.execute("SHOW TABLES")
+    tables = cur.fetchall()
+    return str(tables)    
