@@ -19,6 +19,9 @@ def menu_page():
 
         cur.execute("""
             SELECT id, food_name, description, price, image
+            cur.execute("SHOW TABLES")
+            tables = cur.fetchall()
+            print("TABLES =", tables)
             FROM foods
         """)
 
